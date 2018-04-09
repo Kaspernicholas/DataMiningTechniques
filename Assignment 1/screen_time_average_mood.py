@@ -68,6 +68,7 @@ for id in range(0, 27):
     plt.plot(range(1, len(screen_array)+1), screen_array)
     plt.xlabel('Date')
     plt.ylabel('Total Screen Time [Hr]')
+    plt.ylim(bottom=0)
     plt.show()
 
     mood_array = mood_per_day(id)
