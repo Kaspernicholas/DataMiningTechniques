@@ -30,7 +30,7 @@ for i in range(1, 34):
     # Check for all instances of the patient id in the data set and save corresponding information
     sub_data = []
     for j in range(0, len(ids)):
-        if ids[j] == '%s' %id:
+        if ids[j] == '%s' % id:
             sub_data.append([timestamps[j], variables[j], values[j]])
 
     if sub_data != []:
