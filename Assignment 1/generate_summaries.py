@@ -1,5 +1,6 @@
 import pickle as pkl
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 VARIABLES = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'screen', 'call', 'sms', 'appCat.builtin', 'appCat.communication', 'appCat.entertainment', 'appCat.finance', 'appCat.game', 'appCat.office',	'appCat.other', 'appCat.social', 'appCat.travel', 'appCat.unknown', 'appCat.utilities', 'appCat.weather']
@@ -12,6 +13,8 @@ if __name__ == '__main__':
     # import data
     data = pd.read_csv(open('./dataset_mood_smartphone.csv', 'rb'))
     print('Data Imported...\n')
+
+    corrs = []
 
     for i in range(1, 34):
         # load a patient's data
@@ -45,10 +48,20 @@ if __name__ == '__main__':
         patient_summary = pd.concat(day_series, axis=1)
         patient_summary.columns = VARIABLES
 
-        # save this summary
-        patient_summary.to_csv('./summaries/patient_{:02}_summary.csv'.format(i))
-        print('Saved patient {} summary'.format(patient_name))
+        # remove rows of data without mood data
+        # (have to find longest series of real valued NaNs)
 
-        # patient_summary.plot(subplots=True)
-        # plt.show()
-        # print(patient_summary)
+        a = patient_summary.mood.values
+        m = np.concatenate(([True], np.isnan(a), [True]))
+        ss = np.flatnonzero(m[1:] != m[:-1]).reshape(-1, 2)
+        start, stop = ss[(ss[:, 1] - ss[:, 0]).argmax()]
+
+        # shift mood and circumplex up one
+        # patient_summary[['mood', 'circumplex.arousal', 'circumplex.valence']] = patient_summary[['mood', 'circumplex.arousal', 'circumplex.valence']].shift(-1)
+
+        # corrs.append(patient_summary[start:stop-1].corr()['mood'])
+
+        save this summary
+        patient_summary[start:stop].to_csv('./summaries_cleaned/patient_{:02}_summary.csv'.format(i), na_rep='0')
+        print('Saved patient {} summary'.format(patient_name))
+    # print(corrs)
