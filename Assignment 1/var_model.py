@@ -40,7 +40,7 @@ if __name__ == '__main__':
     mses = []
 
     for i in range(1, 34):
-
+    
         # load patient data
         try:
             data = pd.read_csv(open('./summaries_cleaned/patient_{:02d}_summary.csv'.format(i),'rb'), index_col=0, parse_dates=True)
@@ -51,9 +51,9 @@ if __name__ == '__main__':
 
         p_data = data['mood']
         p_data.rename(columns={'mood': 'next_mood'}, inplace=True)
-         
+        
         #p_data = pd.concat([p_data, data.iloc[:, :5].rolling(k).mean()], axis=1)
-        p_data = pd.concat([p_data, data[['mood', 
+        p_data = pd.concat([p_data, data[['mood',
                                           'circumplex.arousal',
                                           'circumplex.valence',
                                           'activity',
@@ -62,7 +62,9 @@ if __name__ == '__main__':
                                           'sms']]], axis=1)
         
         p_data.rename(columns={p_data.columns[0]: 'next_mood'}, inplace=True)
+
         p_data['next_mood'] = p_data['next_mood'].shift(-1)
+
         p_data = p_data[:-1]   # remove final NaN caused by shifting
         
         #print(p_data)
@@ -82,27 +84,47 @@ if __name__ == '__main__':
         validate_x, validate_y = validate.iloc[:, 1:], validate['next_mood']
         test_x, test_y = test.iloc[:, 1:], test['next_mood']
 
-        # --- Run Model Here on p_data --- 
+        # --- Run Model Here on p_data ---
 
-        # VAR MODEL
         squared_error = []
 
-        for t in range(splits[1], len(p_data)):
-            model = VAR(p_data.iloc[:t, 1:])
-            results = model.fit(1)
-            yhat = results.forecast(p_data.iloc[:t, 1:].values, 1)[0][0]
+        # Train on trainset + parts of validation set
+        for t in range(len(train), len(train2)):
+            #print(p_data.iloc[t-1:t, 1:])
+            model = VAR(train2.iloc[:t, :])
+            results = model.fit(4)
+            yhat = results.forecast(train2.iloc[:t, :].values, 1)[0][0]
             obs = p_data['next_mood'][t]
-
+    
             print('Predicted: {:.2f}, Observed: {:.2f}'.format(yhat, obs))
             squared_error.append((obs - yhat)**2)
-
+        
         mse = np.mean(squared_error)
         print('\nMSE: {}'.format(mse))
         mses.append(mse)
+
+''''
+            # VAR MODEL
+            squared_error = []
+
+            for t in range(splits[1], len(p_data)):
+                #print(p_data.iloc[t-1:t, 1:])
+                model = VAR(p_data.iloc[:t, 1:])
+                #print(model.select_order(5))
+                results = model.fit(2)
+                yhat = results.forecast(p_data.iloc[:t, 1:].values, 1)[0][0]
+                obs = p_data['next_mood'][t]
+
+                print('Predicted: {:.2f}, Observed: {:.2f}'.format(yhat, obs))
+                squared_error.append((obs - yhat)**2)
+
+            mse = np.mean(squared_error)
+            print('\nMSE: {}'.format(mse))
+            mses.append(mse)
         
 
-
-    print('\n\nAvg. MSE (all patients): {}'.format(np.mean(mses)))
+'''
+print('\n\nAvg. MSE (all patients): {}'.format(np.mean(mses)))
 
 
     
