@@ -14,7 +14,6 @@ if __name__ == '__main__':
     data = pd.read_csv(open('./dataset_mood_smartphone.csv', 'rb'))
     print('Data Imported...\n')
 
-    corrs = []
 
     for i in range(1, 34):
         # load a patient's data
@@ -48,20 +47,49 @@ if __name__ == '__main__':
         patient_summary = pd.concat(day_series, axis=1)
         patient_summary.columns = VARIABLES
 
-        # remove rows of data without mood data
-        # (have to find longest series of real valued NaNs)
+        # --- Filling in missing data
+        # finds longest run of days where there can be at most a break of 2
+        # days of missing data, which is filled in by linear interpolation
 
         a = patient_summary.mood.values
-        m = np.concatenate(([True], np.isnan(a), [True]))
-        ss = np.flatnonzero(m[1:] != m[:-1]).reshape(-1, 2)
-        start, stop = ss[(ss[:, 1] - ss[:, 0]).argmax()]
+        mask_print = ''
+        for j,b in enumerate(np.isnan(a)):
+            if b:
+                mask_print += '_'
+            else:
+                mask_print += '#'
+        
+        print("p{:02d}| {}".format(i, mask_print))
+        
+        m = np.invert(np.isnan(a))
+        block = []
+        blocks = []
+        c = 0
+        for j in range(len(a)):
+            if m[j]:
+                c = 0
+                block.append(j)
+            else:
+                c += 1
 
-        # shift mood and circumplex up one
-        # patient_summary[['mood', 'circumplex.arousal', 'circumplex.valence']] = patient_summary[['mood', 'circumplex.arousal', 'circumplex.valence']].shift(-1)
+            if c >= 2:
+                blocks.append(block)
+                block = []
 
-        # corrs.append(patient_summary[start:stop-1].corr()['mood'])
+        blocks.append(block)
 
-        save this summary
-        patient_summary[start:stop].to_csv('./summaries_cleaned/patient_{:02}_summary.csv'.format(i), na_rep='0')
-        print('Saved patient {} summary'.format(patient_name))
-    # print(corrs)
+        maxi = 0
+        for b in blocks:
+            if len(b) > maxi:
+                indicies = b
+                maxi = len(b)
+        
+        patient_summary = patient_summary[indicies[0]:indicies[-1]+1]
+        patient_summary['mood'] = patient_summary['mood'].interpolate()
+
+        # save this summary
+        patient_summary.to_csv('./summaries_cleaned/patient_{:02}_summary.csv'.format(i),
+            na_rep='0')
+        #print('Saved patient {} summary'.format(patient_name))
+        
+        

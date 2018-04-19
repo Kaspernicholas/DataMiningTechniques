@@ -45,7 +45,7 @@ if __name__ == '__main__':
         print('Removed from patient {}: {} attributes'.format(i, len(sparse.index)))
         print(sparse.index)
         
-        k = 4
+        k = 1
         data = data.rolling(k).mean()
 
         data = pd.concat([next_mood, data], axis=1)
@@ -57,4 +57,6 @@ if __name__ == '__main__':
             data.to_csv('./patient_data/avg_k{}/p{:02d}_k{}.csv'.format(k, i, k))
         else:
             data.to_csv('./patient_data/p{:02d}.csv'.format(i))
+
+    print('\nProcessed all patients (k={})'.format(k))
 
