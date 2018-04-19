@@ -29,10 +29,11 @@ if __name__ == '__main__':
         data['appCat.other'] = data[['appCat.other', 'appCat.unknown']]
         data.drop(columns=['appCat.unknown'], inplace=True)
 
-        density = data.astype(bool).sum(axis=0) / 45
+        app_density = data.iloc[:, 7:].astype(bool).sum(axis=0) / 45
+        #print(app_density)
 
         threshold = 0.25
-        sparse = density.loc[density < threshold]
+        sparse = app_density.loc[app_density < threshold]
         # add the sparse sets to appCat.other
 
         data['appCat.other'] =  data.loc[:, ['appCat.other']+list(sparse.index)].sum(axis=1)
@@ -41,10 +42,10 @@ if __name__ == '__main__':
 
         data.drop(columns=sparse.index, inplace=True)
         
-        print('Removed from patient {}'.format(i))
+        print('Removed from patient {}: {} attributes'.format(i, len(sparse.index)))
         print(sparse.index)
         
-        k = 1
+        k = 4
         data = data.rolling(k).mean()
 
         data = pd.concat([next_mood, data], axis=1)
@@ -52,5 +53,8 @@ if __name__ == '__main__':
         data = data.iloc[k-1:-1, :]
 
         # save the processed data
-        data.to_csv('./patient_data/p{:02d}.csv'.format(i))
+        if k > 1:
+            data.to_csv('./patient_data/avg_k{}/p{:02d}_k{}.csv'.format(k, i, k))
+        else:
+            data.to_csv('./patient_data/p{:02d}.csv'.format(i))
 
