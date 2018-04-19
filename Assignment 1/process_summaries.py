@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
 
         next_mood = data['mood'].copy().shift(-1)
+        next_mood.rename('next_mood', inplace=True)
         
         # clean sparse columns
         # 1 identify columns with less than 25% data points
@@ -43,9 +44,13 @@ if __name__ == '__main__':
         print('Removed from patient {}'.format(i))
         print(sparse.index)
         
+        k = 1
+        data = data.rolling(k).mean()
+
         data = pd.concat([next_mood, data], axis=1)
-        data.rename(columns={data.columns[0]: 'next_mood'}, inplace=True)
-        data = data.iloc[:-1, :]
-        # save unsparsed dataframe
+        data.rename(columns={0: 'next_mood'}, inplace=True)
+        data = data.iloc[k-1:-1, :]
+
+        # save the processed data
         data.to_csv('./patient_data/p{:02d}.csv'.format(i))
 

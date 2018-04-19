@@ -43,7 +43,7 @@ if __name__ == '__main__':
     
         # load patient data
         try:
-            data = pd.read_csv(open('./summaries_cleaned/patient_{:02d}_summary.csv'.format(i),'rb'), index_col=0, parse_dates=True)
+            data = pd.read_csv(open('./summaries_cleaned/patient_{}_extended_summary.csv'.format(i),'rb'), index_col=1, parse_dates=True)
         except:
             continue
 
@@ -58,8 +58,10 @@ if __name__ == '__main__':
                                           'circumplex.valence',
                                           'activity',
                                           'screen',
-                                          'call',
-                                          'sms']]], axis=1)
+                                          #'call',
+                                          #'sms',
+                                          'relative social',
+                                          'relative non social']]], axis=1)
         
         p_data.rename(columns={p_data.columns[0]: 'next_mood'}, inplace=True)
 
@@ -67,7 +69,7 @@ if __name__ == '__main__':
 
         p_data = p_data[:-1]   # remove final NaN caused by shifting
         
-        #print(p_data)
+        print(p_data.columns)
 
         # split into training, validation and testing set
         seg = [0.7, 0.1, 0.2]
@@ -89,11 +91,11 @@ if __name__ == '__main__':
         squared_error = []
 
         # Train on trainset + parts of validation set
-        for t in range(len(train), len(train2)):
+        for t in range(len(train2)):
             #print(p_data.iloc[t-1:t, 1:])
-            model = VAR(train2.iloc[:t, :])
-            results = model.fit(4)
-            yhat = results.forecast(train2.iloc[:t, :].values, 1)[0][0]
+            model = VAR(train2.iloc[:t, 1:])
+            results = model.fit(1)
+            yhat = results.forecast(p_data.iloc[:t, :].values, 1)[0][0]
             obs = p_data['next_mood'][t]
     
             print('Predicted: {:.2f}, Observed: {:.2f}'.format(yhat, obs))
