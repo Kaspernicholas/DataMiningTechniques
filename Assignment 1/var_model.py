@@ -18,7 +18,6 @@ def run_var(k=1, n=1, test=True, fs='Corrs'):
     else:
         features_all = pd.read_csv('./patient_data/Best_F_Corr.csv', index_col=0)
 
-    #print(features)
     for i in range(1, 34):
     
         # load patient data
@@ -32,22 +31,12 @@ def run_var(k=1, n=1, test=True, fs='Corrs'):
         # Feature selection
         features = list(features_all.loc[i])[0:n] 
         p_data = data[['next_mood']+features]
-        #print(p_data.columns)
+
         # split into training, validation and testing set
         seg = [0.7, 0.1, 0.2]
         t = len(p_data)
         splits = [math.floor(seg[0]*t), math.floor((seg[0]+seg[1])*t)]
         
-        #train = p_data[:splits[0]]
-        #train2 = p_data[:splits[1]]   # includes validation data
-        #validate = p_data[splits[0]:splits[1]]
-        #test = p_data[splits[1]:]
-        #
-        #train_x, train_y = train.iloc[:, 1:], train['next_mood']
-        #train2_x, train2_y = train2.iloc[:, 1:], train2['next_mood']
-        #validate_x, validate_y = validate.iloc[:, 1:], validate['next_mood']
-        #test_x, test_y = test.iloc[:, 1:], test['next_mood']
-
         # --- Run Model Here on p_data ---
 
         squared_error = []
@@ -59,12 +48,12 @@ def run_var(k=1, n=1, test=True, fs='Corrs'):
             start, stop = splits[0], splits[1]
 
         for t in range(start, stop):
-            #print(p_data.iloc[t-1:t, 1:])
             model = VAR(p_data.iloc[:t, 1:])
             results = model.fit(k)
             yhat = results.forecast(p_data.iloc[:t, 1:].values, 1)[0][0]
             obs = p_data.iloc[t, 0]
             #print('Predicted: {:.2f}, Observed: {:.2f}'.format(yhat, obs))
+            print(yhat)
             squared_error.append((obs - yhat)**2)
         
         mse = np.mean(squared_error)
@@ -90,7 +79,7 @@ if __name__ == '__main__':
     #np.savetxt('./VAR_RESULTS_CORR.csv', results, delimiter=',', fmt='%s')
     #print(results)
     #print('Lowest MSE: {}'.format(np.min(results)))
-    run_var(4, 2, test=True, fs='MSE') 
+    run_var(4, 2, test=True, fs='Corrs') 
 
 
 

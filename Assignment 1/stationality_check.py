@@ -24,5 +24,13 @@ if __name__ == '__main__':
             x = data[v].values
             result = adfuller(x)
             p_values.loc[v, i] = result[1]
+        
+    # calculate the mean and std for each variable
+    for v in VARIABLES:
+            vals = p_values.loc[v].values
+            mean = np.nanmean(vals)
+            std = np.nanstd(vals, ddof=1)
 
-    print(p_values.mean(axis=1))
+            ci = 2.06*std / np.sqrt(len(vals))
+            print('{} & ${:.4f} ({:.4f})$ \\\\'.format(v, mean, std)) 
+    #print(p_values.mean(axis=1))

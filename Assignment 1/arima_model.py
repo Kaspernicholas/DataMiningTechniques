@@ -45,6 +45,7 @@ def run_arima(k=1, test=True):
             model = ARIMA(p_data['mood'].iloc[:t], order=(k, 1, 0))
             model_fit = model.fit(disp=0)
             yhat = model_fit.forecast()[0][0]
+            print(yhat)
             obs = p_data.iloc[t, 0]
             squared_error.append((obs - yhat)**2)
         
