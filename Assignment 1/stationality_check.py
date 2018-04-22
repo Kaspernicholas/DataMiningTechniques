@@ -7,6 +7,7 @@ VARIABLES = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'sc
 if __name__ == '__main__':
     
     p_values = pd.DataFrame([], index=VARIABLES)
+    p_values_diff = pd.DataFrame([], index=VARIABLES)
 
     for i in range(1, 34):
         # load patient data and calculate stationarity p_values for each
@@ -24,6 +25,10 @@ if __name__ == '__main__':
             x = data[v].values
             result = adfuller(x)
             p_values.loc[v, i] = result[1]
+
+            x_diff = data[v].diff()[1:].values
+            result = adfuller(x_diff)
+            p_values_diff.loc[v, i] = result[1]
         
     # calculate the mean and std for each variable
     for v in VARIABLES:
@@ -31,6 +36,12 @@ if __name__ == '__main__':
             mean = np.nanmean(vals)
             std = np.nanstd(vals, ddof=1)
 
-            ci = 2.06*std / np.sqrt(len(vals))
-            print('{} & ${:.4f} ({:.4f})$ \\\\'.format(v, mean, std)) 
-    #print(p_values.mean(axis=1))
+            vals_diff = p_values_diff.loc[v].values
+            mean_diff = np.nanmean(vals_diff)
+            std_diff = np.nanstd(vals_diff, ddof=1)
+            ci_diff = 2.06*std / np.sqrt(len(vals))
+            print('{} & {:.4f} ({:.4f}) & {:.4f} ({:.4f})  \\\\'.format(v,
+                                                                        mean,
+                                                                        std,
+                                                                        mean_diff,
+                                                                        std_diff)) 

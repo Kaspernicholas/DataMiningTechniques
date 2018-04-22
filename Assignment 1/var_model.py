@@ -48,12 +48,15 @@ def run_var(k=1, n=1, test=True, fs='Corrs'):
             start, stop = splits[0], splits[1]
 
         for t in range(start, stop):
-            model = VAR(p_data.iloc[:t, 1:])
+            # find first order differences over all points
+            diff = p_data.iloc[:t, 1:].diff().iloc[1:]
+            model = VAR(diff)
             results = model.fit(k)
-            yhat = results.forecast(p_data.iloc[:t, 1:].values, 1)[0][0]
+            yhat_diff = results.forecast(diff.values, 1)[0][0]
+            yhat = p_data.iloc[t, 1] + yhat_diff
             obs = p_data.iloc[t, 0]
             #print('Predicted: {:.2f}, Observed: {:.2f}'.format(yhat, obs))
-            print(yhat)
+            #print(yhat)
             squared_error.append((obs - yhat)**2)
         
         mse = np.mean(squared_error)
@@ -73,24 +76,9 @@ def run_var(k=1, n=1, test=True, fs='Corrs'):
 if __name__ == '__main__':
     results = np.zeros([4, 7])   # referenced k, n
 
-    #for k in range(1, 5):
-    #    for n in range(2, 9):
-    #        results[k-1, n-2] = run_var(k, n)
-    #np.savetxt('./VAR_RESULTS_CORR.csv', results, delimiter=',', fmt='%s')
-    #print(results)
-    #print('Lowest MSE: {}'.format(np.min(results)))
-    run_var(4, 2, test=True, fs='Corrs') 
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
+    for k in range(1, 5):
+        for n in range(2, 9):
+            results[k-1, n-2] = run_var(k, n, test=False, fs='MSE')
+    print(results)
+    print('Lowest MSE: {}'.format(np.min(results)))
+    #run_var(2, 2, test=True, fs='Corrs') 
