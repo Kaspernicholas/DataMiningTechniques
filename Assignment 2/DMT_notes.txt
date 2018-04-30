@@ -1,0 +1,30 @@
+FROM: https://www.dropbox.com/sh/5kedakjizgrog0y/_LE_DFCA7J/ICDM_2013
+
+
+Data selection: 
+
+- Down-sampling (large difference in clicked vs. booked vs. not-clicked / positive vs. negative entries) to ~10% of data
+- Divide into Training and Validation set
+
+
+Possible models: 
+
+- LambdaMART (RankLib?)
+- GBM (Gradient Boosting Machines)
+
+
+Adding features: 
+
+- Mean of numeric values
+- Standard deviation of numeric values
+- Median of numeric values
+- Position in ordering of listings
+
+* This could be done per prop_id, search_id and/or dest_id
+
+
+Missing values: 
+
+- Zero value to all competitors information
+
+
