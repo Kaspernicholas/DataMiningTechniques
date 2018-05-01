@@ -18,7 +18,8 @@ Adding features:
 - Mean of numeric values
 - Standard deviation of numeric values
 - Median of numeric values
-- Position in ordering of listings
+- Position in ordering of listings -> normalized ranks
+- Number of times clicked and booked per prop_id (total)
 
 * This could be done per prop_id, search_id and/or dest_id
 
@@ -28,3 +29,6 @@ Missing values:
 - Zero value to all competitors information
 
 
+Outlier removal: 
+
+- ? 
